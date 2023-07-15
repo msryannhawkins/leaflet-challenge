@@ -71,10 +71,20 @@ d3.json(url).then(function (data) {
   
   }
   
+//pseudo code for remainder of task
+// use choropleth to create markers
+    // create variable for size and depth of the earthquake to call in the markers
+    // The depth of the earth can be found as the third coordinate for each earthquake.
+    // include popup info with the earthquake stas for each marker activity from day 1
+    // create a legend activity day 2.4
+    // create choropath json? from activity 2.4
+
+
+
 //--------initial thoughts and code------
   // Fetch the JSON data, establish the promise, and console log it
   //let promise = d3.json(data);
-  c//onsole.log(promise);
+  //onsole.log(promise);
   
   // create a map that plots all the earthquakes from your dataset based on their longitude and latitude
   // Creating our initial map object:
