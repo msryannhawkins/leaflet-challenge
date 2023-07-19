@@ -4,104 +4,90 @@
 
 // import data
 // establish the link in a variable
-const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+let url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+// create a map that plots all the earthquakes from your dataset based on their longitude and latitude
+// Creating our initial map object:
+// We set the longitude, latitude, and starting zoom level.
+let myMap = L.map("map", {
+    center: [39.9612, -82.9988],
+    zoom: 3.5
+});
+
+// Adding a tile layer (the background map image) to our map:
+// We use the addTo() method to add objects to our map.
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(myMap);
 
 
-// Perform a GET request to the query URL/
 d3.json(url).then(function (data) {
-    // Once we get a response, send the data.features object to the createFeatures function.
-    createFeatures(data.features);
-  });
-  
-  function createFeatures(earthquakeData) {
-  
-    // Define a function that we want to run once for each feature in the features array.
-    // Give each feature a popup that describes the place and time of the earthquake.
-    function onEachFeature(feature, layer) {
-      layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p>`);
+    // set up array for the feature coordinates of each earthquake
+    featCoord = []
+
+    //loop through data.features to extract coordinates and earthquake magnitude
+    for (let i = 0; i < data.features.length; i++) {
+
+        //create an empty string to hold color denotations
+        let color = "";
+
+        //pull magnitude from the features length. geometry.corrdinates and is the 2nd (0, 1, 2) data point provided
+        let geoCoord = data.features[i].geometry.coordinates[2];
+
+        //set up conditions to determine color based on magnitude of the earthquake
+        if (geoCoord > -10 && geoCoord < 10) {
+            color = "#29cc5b";
+        } else if (geoCoord >= 10 && geoCoord < 30) {
+            color = "#36f4e6";
+        } else if (geoCoord >= 30 && geoCoord < 50) {
+            color = "#36b7f4";
+        } else if (geoCoord >= 50 && geoCoord < 70) {
+            color = "#4436f4";
+        } else if (geoCoord >= 70 && geoCoord < 90) {
+            color = "#a836f4";
+        } else {
+            color = "#f436ec";
+        }
+       
+        coordAndMag = [
+            //lat
+            data.features[i].geometry.coordinates[1],
+            //long
+            data.features[i].geometry.coordinates[0],
+            //mag
+            data.features[i].geometry.coordinates[2],
+        ];
+
+        featCoord.push(coordAndMag[2]);
+        L.circle(coordAndMag, {
+            fillOpacity: .75,
+            color: color,
+            radius: Math.sqrt(Math.abs(geoCoord)) * 10000,
+        })
+            .bindPopup(
+                `<h1>${data.features[i].properties.place}</h1> <hr> <h3>Magnitude * 10 = ${data.features[i].properties.mag * 10}</h3>`
+            )
+            .addTo(myMap);
     }
-  
-    // Create a GeoJSON layer that contains the features array on the earthquakeData object.
-    // Run the onEachFeature function once for each piece of data in the array.
-    let earthquakes = L.geoJSON(earthquakeData, {
-      onEachFeature: onEachFeature
-    });
-  
-    // Send our earthquakes layer to the createMap function/
-    createMap(earthquakes);
-  }
-  
-  function createMap(earthquakes) {
-  
-    // Create the base layers.
-    let street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    })
-  
-    let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-    });
-  
-    // Create a baseMaps object.
-    let baseMaps = {
-      "Street Map": street,
-      "Topographic Map": topo
+
+});
+
+
+function Legend(map) {
+    let legend = L.control({ position: "bottomright" });
+    legend.onAdd = function (myMap) {
+        let div = L.DomUtil.create("div", "legend");
+        div.innerHTML += '<h3>Depth (km)</h3>';
+        div.innerHTML += '<i style="background: #29cc5b"></i><span>-10 - 10</span><br>';
+        div.innerHTML += '<i style="background: #36f4e6"></i><span>10 - 30</span><br>';
+        div.innerHTML += '<i style="background: #36b7f4"></i><span>30 - 50</span><br>';
+        div.innerHTML += '<i style="background: #4436f4"></i><span>50 - 70</span><br>';
+        div.innerHTML += '<i style="background: #a836f4"></i><span>70 - 90</span><br>';
+        div.innerHTML += '<i style="background: #f436ec"></i><span>90+</span><br>';
+        return div;
     };
-  
-    // Create an overlay object to hold our overlay.
-    let overlayMaps = {
-      Earthquakes: earthquakes
-    };
-  
-    // Create our map, giving it the streetmap and earthquakes layers to display on load.
-    let myMap = L.map("map", {
-      center: [
-        39.9612, -82.9988
-      ],
-      zoom: 1.5,
-      layers: [street, earthquakes]
-    });
-  
-    // Create a layer control.
-    // Pass it our baseMaps and overlayMaps.
-    // Add the layer control to the map.
-    L.control.layers(baseMaps, overlayMaps, {
-      collapsed: false
-    }).addTo(myMap);
-  
-  }
-  
-//pseudo code for remainder of task
-// use choropleth to create markers
-    // create variable for size and depth of the earthquake to call in the markers
-    // The depth of the earth can be found as the third coordinate for each earthquake.
-    // include popup info with the earthquake stas for each marker activity from day 1
-    // create a legend activity day 2.4
-    // create choropath json? from activity 2.4
+    legend.addTo(map);
+}
 
-
-
-//--------initial thoughts and code------
-  // Fetch the JSON data, establish the promise, and console log it
-  //let promise = d3.json(data);
-  //onsole.log(promise);
-  
-  // create a map that plots all the earthquakes from your dataset based on their longitude and latitude
-  // Creating our initial map object:
-  // We set the longitude, latitude, and starting zoom level.
-  //let myMap = L.map("map", {
-      //center: [39.9612, -82.9988],
-      //zoom: 1.5
-    //});
-  
-  // Adding a tile layer (the background map image) to our map:
-  // We use the addTo() method to add objects to our map.
-  //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  //}).addTo(myMap);
-  
-  //function MapDetail(earthquakes) {
-      
-  //}
-
+Legend(myMap);
 
