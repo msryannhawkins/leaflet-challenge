@@ -74,20 +74,23 @@ d3.json(url).then(function (data) {
 
 
 function Legend(map) {
-    let legend = L.control({ position: "bottomright" });
-    legend.onAdd = function (myMap) {
-        let div = L.DomUtil.create("div", "legend");
-        div.innerHTML += '<h3>Depth (km)</h3>';
-        div.innerHTML += '<i style="background: #29cc5b"></i><span>-10 - 10</span><br>';
-        div.innerHTML += '<i style="background: #36f4e6"></i><span>10 - 30</span><br>';
-        div.innerHTML += '<i style="background: #36b7f4"></i><span>30 - 50</span><br>';
-        div.innerHTML += '<i style="background: #4436f4"></i><span>50 - 70</span><br>';
-        div.innerHTML += '<i style="background: #a836f4"></i><span>70 - 90</span><br>';
-        div.innerHTML += '<i style="background: #f436ec"></i><span>90+</span><br>';
-        return div;
+    let legendControl = L.control({ position: 'bottomright' });
+  
+    legendControl.onAdd = function () {
+      let div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = '<h3>Depth (km)</h3>' +
+        '<i style="background: #29cc5b"></i><span>-10 - 10</span><br>' +
+        '<i style="background: #36f4e6"></i><span>10 - 30</span><br>' +
+        '<i style="background: #36b7f4"></i><span>30 - 50</span><br>' +
+        '<i style="background: #4436f4"></i><span>50 - 70</span><br>' +
+        '<i style="background: #a836f4"></i><span>70 - 90</span><br>' +
+        '<i style="background: #f436ec"></i><span>90+</span><br>';
+  
+      return div;
     };
-    legend.addTo(map);
-}
-
-Legend(myMap);
+  
+    legendControl.addTo(map);
+  }
+  
+  Legend(myMap);
 
